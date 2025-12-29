@@ -1,0 +1,74 @@
+if game.GameId == 4019583467 then
+    local Library = loadstring(game:HttpGetAsync("https://github.com/ActualMasterOogway/Fluent-Renewed/releases/latest/download/Fluent.luau"))()
+    local Window = Library:CreateWindow({
+        Title = "Simple Cash Farm",
+        SubTitle = "by User",
+        Size = UDim2.fromOffset(300, 200),
+        Resize = false,
+        Acrylic = true,
+        Theme = "Dark",
+    })
+
+    local players = game:GetService("Players")
+    local plr = players.LocalPlayer
+    local char, humPart
+
+    local function getCharacter()
+        char = plr.Character or plr.CharacterAdded:Wait()
+        humPart = char:WaitForChild("HumanoidRootPart", 5)
+        return char, humPart
+    end
+
+    char, humPart = getCharacter()
+
+    plr.CharacterAdded:Connect(function()
+        char, humPart = getCharacter()
+    end)
+
+    local collect = workspace:FindFirstChild("CollectableItems")
+    local isFarming = false
+
+    local function startFarm()
+        if isFarming then return end
+        isFarming = true
+        while isFarming and collect do
+            pcall(function()
+                for _, p in ipairs(collect:GetChildren()) do
+                    if not isFarming then break end
+                    if not p:GetAttribute("CannotSee") then
+                        -- Телепортация к монете
+                        humPart.CFrame = p.CFrame
+                        -- Меняем позицию по оси Y (например, чтобы персонаж "лежал")
+                        humPart.Position = Vector3.new(humPart.Position.X, humPart.Position.Y - 3, humPart.Position.Z)
+                        -- Имитация прыжка для сбора
+                        local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+                        if humanoid then
+                            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                        end
+                        wait(0.5)
+                    end
+                end
+            end)
+            wait(0.5)
+        end
+    end
+
+    local function stopFarm()
+        isFarming = false
+    end
+
+    local MainTab = Window:CreateTab({ Title = "Main", Icon = "circle-dollar-sign" })
+    MainTab:CreateToggle({
+        Title = "Cash Farm",
+        Default = false,
+        Callback = function(state)
+            if state then
+                startFarm()
+            else
+                stopFarm()
+            end
+        end
+    })
+
+    Window:SelectTab(1)
+end
